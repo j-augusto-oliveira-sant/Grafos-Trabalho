@@ -30,15 +30,10 @@ class ListaAdjacenciaTest {
 
     @Test
     void testRemoverVertice() {
-        // Arrange
         ListaAdjacencia grafo = new ListaAdjacencia(5, false);
         grafo.adicionarAresta(0, 1, 2);
         grafo.adicionarAresta(0, 2, 3);
-
-        // Act
         grafo.removerVertice(1);
-
-        // Assert
         // o 2 virou o novo 1 mas o peso dele era 3 e nao 2
         assertTrue(grafo.isAdjacenteComPeso(0, 1, 3));
         assertFalse(grafo.isAdjacenteComPeso(0, 1, 2));
@@ -53,6 +48,14 @@ class ListaAdjacenciaTest {
 
         // Act & Assert
         assertTrue(grafo.isConexo());
+
+        ListaAdjacencia grafoNaoConexo = new ListaAdjacencia(5, false);
+        grafoNaoConexo.adicionarAresta(0, 1);
+        grafoNaoConexo.adicionarAresta(1, 2);
+        grafoNaoConexo.adicionarAresta(3, 4);
+
+        // Act & Assert
+        assertFalse(grafoNaoConexo.isConexo());
     }
 
     @Test
@@ -68,23 +71,38 @@ class ListaAdjacenciaTest {
     }
 
     @Test
-    public void testIsHamiltoniano() {
-        // Grafo Hamiltoniano (atende ao Teorema de Ore e Teorema de Dirac)
-        ListaAdjacencia grafoHamiltoniano = new ListaAdjacencia(4, false);
-        grafoHamiltoniano.adicionarAresta(0, 1);
-        grafoHamiltoniano.adicionarAresta(1, 2);
-        grafoHamiltoniano.adicionarAresta(2, 3);
-        grafoHamiltoniano.adicionarAresta(3, 0);
+    void testIsCompleto2(){
+        ListaAdjacencia grafoNaoCompleto = new ListaAdjacencia(3,false);
+        grafoNaoCompleto.adicionarAresta(0,1);
+        grafoNaoCompleto.adicionarAresta(1,2);
+        assertFalse(grafoNaoCompleto.isCompleto());
+    }
 
-        assertTrue(grafoHamiltoniano.isHamiltoniano());
+    @Test
+    void testIsHamiltoniano(){
+        ListaAdjacencia grafoHamiltoniano = new ListaAdjacencia(5, false);
+        grafoHamiltoniano.adicionarAresta(0,2);
+        grafoHamiltoniano.adicionarAresta(0,1);
+        grafoHamiltoniano.adicionarAresta(2,1);
+        grafoHamiltoniano.adicionarAresta(2,3);
+        grafoHamiltoniano.adicionarAresta(2,4);
+        grafoHamiltoniano.adicionarAresta(4,3);
+        grafoHamiltoniano.adicionarAresta(4,1);
+        grafoHamiltoniano.adicionarAresta(1,3);
+        assertEquals(1, grafoHamiltoniano.isHamiltoniano());
+    }
 
-        // Grafo Não Hamiltoniano (não atende ao Teorema de Dirac)
-        ListaAdjacencia grafoNaoHamiltoniano = new ListaAdjacencia(4, false);
-        grafoNaoHamiltoniano.adicionarAresta(0, 1);
-        grafoNaoHamiltoniano.adicionarAresta(1, 2);
-        grafoNaoHamiltoniano.adicionarAresta(2, 3);
-
-        assertFalse(grafoNaoHamiltoniano.isHamiltoniano());
+    @Test
+    void testIsHamiltoniano2(){
+        ListaAdjacencia grafoNaoHamiltoniano = new ListaAdjacencia(6, false);
+        grafoNaoHamiltoniano.adicionarAresta(0,3);
+        grafoNaoHamiltoniano.adicionarAresta(3,2);
+        grafoNaoHamiltoniano.adicionarAresta(3,1);
+        grafoNaoHamiltoniano.adicionarAresta(1,2);
+        grafoNaoHamiltoniano.adicionarAresta(3,4);
+        grafoNaoHamiltoniano.adicionarAresta(3,5);
+        grafoNaoHamiltoniano.adicionarAresta(5,4);
+        assertEquals(0, grafoNaoHamiltoniano.isHamiltoniano());
     }
 
     @Test
@@ -97,16 +115,34 @@ class ListaAdjacenciaTest {
         grafoEuleriano.adicionarAresta(3, 4);
         grafoEuleriano.adicionarAresta(4, 0);
 
-        assertTrue(grafoEuleriano.isEuleriano());
+        assertEquals(1,grafoEuleriano.isEuleriano());
 
         // Grafo Não Euleriano (um vértice tem grau ímpar)
+        ListaAdjacencia grafoSemiEuleriano = new ListaAdjacencia(5, false);
+        grafoSemiEuleriano.adicionarAresta(0, 1);
+        grafoSemiEuleriano.adicionarAresta(4, 0);
+        grafoSemiEuleriano.adicionarAresta(2, 4);
+        grafoSemiEuleriano.adicionarAresta(4, 3);
+        grafoSemiEuleriano.adicionarAresta(1, 3);
+        grafoSemiEuleriano.adicionarAresta(1, 2);
+
+        assertEquals(2,grafoSemiEuleriano.isEuleriano());
+
+
+    }
+
+    @Test
+    void testNonEuleriano(){
+        // Não Eulerinao
         ListaAdjacencia grafoNaoEuleriano = new ListaAdjacencia(5, false);
         grafoNaoEuleriano.adicionarAresta(0, 1);
+        grafoNaoEuleriano.adicionarAresta(4, 0);
+        grafoNaoEuleriano.adicionarAresta(2, 4);
+        grafoNaoEuleriano.adicionarAresta(4, 3);
+        grafoNaoEuleriano.adicionarAresta(1, 3);
         grafoNaoEuleriano.adicionarAresta(1, 2);
-        grafoNaoEuleriano.adicionarAresta(2, 3);
-        grafoNaoEuleriano.adicionarAresta(3, 4);
-
-        assertFalse(grafoNaoEuleriano.isEuleriano());
+        grafoNaoEuleriano.adicionarAresta(3, 2);
+        assertEquals(0, grafoNaoEuleriano.isEuleriano());
     }
 
     @Test
@@ -157,13 +193,14 @@ class ListaAdjacenciaTest {
         grafo.adicionarAresta(5,6,7);
 
         //1
-        assertEquals(25,grafo.distanciaDijkstra(1,6));
+        int[] resultado = grafo.calcularDijkstra(1,6);
+        assertEquals(25,resultado[6]);
         //2
-        assertEquals(12,grafo.distanciaDijkstra(1,4));
+        assertEquals(12,resultado[4]);
     }
 
     @Test
-    public void testCaminhoMinimoB_c(){
+    public void testCaminhoMinimoC(){
         ListaAdjacencia grafo = new ListaAdjacencia(18,false);
 //        0. Viana do Castelo
 //        1. Braga

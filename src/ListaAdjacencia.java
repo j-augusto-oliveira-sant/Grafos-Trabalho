@@ -1,5 +1,7 @@
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.Stack;
 
 class Aresta{
     int origem;
@@ -103,6 +105,97 @@ public class ListaAdjacencia {
         return true;
     }
 
+    public int isHamiltoniano() {
+        int[] caminhoHamiltoniano = new int[nVertices];
+        Stack<Integer> pilha = new Stack<>();
+
+        // Inicializa o caminhoHamiltoniano com -1
+        for (int i = 0; i < nVertices; i++) {
+            caminhoHamiltoniano[i] = -1;
+        }
+
+        // Adiciona o primeiro vértice ao caminhoHamiltoniano
+        caminhoHamiltoniano[0] = 0;
+        pilha.push(0);
+
+        // Chama a função auxiliar recursiva para encontrar o caminhoHamiltoniano
+        if (hamiltonianoRecursivo(caminhoHamiltoniano, pilha, 1)) {
+            System.out.println("Caminho Hamiltoniano encontrado:");
+            for (int i : caminhoHamiltoniano) {
+                System.out.print(i + " ");
+            }
+            System.out.println();
+
+            return 1;
+        } else {
+            if (isSemiHamiltoniano()){
+                return 2;
+            }
+            System.out.println("Nenhum Caminho Hamiltoniano encontrado.");
+            return 0;
+        }
+    }
+
+    // Função auxiliar recursiva para encontrar o caminhoHamiltoniano
+    private boolean hamiltonianoRecursivo(int[] caminho, Stack<Integer> pilha, int pos) {
+        if (pos == nVertices) {
+            // Todos os vértices foram visitados, verifica se o último vértice é adjacente ao primeiro
+            int ultimoVertice = caminho[pos - 1];
+            int primeiroVertice = caminho[0];
+            return isAdjacente(ultimoVertice, primeiroVertice);
+        }
+
+        // Tenta adicionar vértices ao caminhoHamiltoniano
+        for (int v = 1; v < nVertices; v++) {
+            if (isAdjacente(pilha.peek(), v) && !pilha.contains(v)) {
+                caminho[pos] = v;
+                pilha.push(v);
+
+                if (hamiltonianoRecursivo(caminho, pilha, pos + 1)) {
+                    return true;
+                }
+                // Backtrack se a adição do vértice não levou a uma solução
+                caminho[pos] = -1;
+                pilha.pop();
+            }
+        }
+
+        return false;
+    }
+
+    public boolean isSemiHamiltoniano() {
+        boolean[] visitado = new boolean[nVertices];
+        dfs(0, visitado);
+        for (boolean v : visitado) {
+            if (!v) {
+                return false;
+            }
+        }
+        return false;
+    }
+
+    public int isEuleriano() {
+        for (int i=0;i<nVertices;i++){
+            if (adjacencias.get(i).size() % 2 != 0){
+                return isSemiEuleriano();
+            }
+        }
+        return 1;
+    }
+
+    public int isSemiEuleriano() {
+        int countOddDegree = 0;
+        for (int i = 0; i < nVertices; i++) {
+            if (adjacencias.get(i).size() % 2 != 0) {
+                countOddDegree++;
+                if (countOddDegree > 2) {
+                    return 0;
+                }
+            }
+        }
+        return countOddDegree == 2 ? 2 : 0;
+    }
+
     public void removerAresta(int u, int v){
         List<Aresta> arestasU =adjacencias.get(u);
         for (Aresta aresta : arestasU){
@@ -149,37 +242,6 @@ public class ListaAdjacencia {
         }
     }
 
-    public boolean isHamiltoniano() {
-        if (!isConexo()) {
-            return false; // Se não for conexo, não pode ser Hamiltoniano
-        }
-        for (int i = 0; i < nVertices; i++) {
-            int grau = adjacencias.get(i).size();
-            if (grau < nVertices / 2) {
-                return false; // Não atende ao Teorema de Dirac
-            }
-        }
-        for (int i = 0; i < nVertices; i++) {
-            for (int j = i + 1; j < nVertices; j++) {
-                if (!isAdjacente(i, j) && (adjacencias.get(i).size() + adjacencias.get(j).size()) < nVertices) {
-                    return false; // Não atende ao Teorema de Ore
-                }
-            }
-        }
-        return true;
-    }
-
-    public boolean isEuleriano() {
-        if (!isConexo()) {
-            return false; // Se não for conexo, não pode ser Euleriano
-        }
-        for (int i = 0; i < nVertices; i++) {
-            if (adjacencias.get(i).size() % 2 != 0) {
-                return false; // Grau ímpar, não é Euleriano
-            }
-        }
-        return true;
-    }
 
 
     public boolean isAdjacente(int u,int v){
